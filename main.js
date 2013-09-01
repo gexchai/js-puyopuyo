@@ -29,7 +29,7 @@ window.onload = function () {
 
     // スペースバーにAボタンを割り当て
     // 32にキーコード
-     game.keybind(32, 'a');
+    game.keybind(32, 'a');
 
     game.onload = function() {
         // 処理
@@ -71,7 +71,6 @@ window.onload = function () {
 
         // 操作ぷよをシーンに追加
         scene.addChild(pair);
-
 
         // 1フレーム毎に呼び出される関数を登録
         scene.addEventListener("enterframe", function() {
@@ -158,6 +157,7 @@ function createPair (game, map, field) {
     var inputLeftCount = 0;
     var inputUpCount = 0;
     var inputAccount = 0;
+    var inputInterval = 3;
 
     // 落下中、つまり操作できる状態かどうか
     pair.isFall = true;
@@ -203,10 +203,10 @@ function createPair (game, map, field) {
 
         // 横移動先のx
         var newX = 0;
-        if (inputRightCount == 1) {
+        if (inputRightCount % inputInterval == 1) {
             newX = formNum==1 ? p0.x+CELL_SIZE : p1.x+CELL_SIZE;
         }
-        if (inputLeftCount == 1) {
+        if (inputLeftCount % inputInterval == 1) {
             newX = formNum==3 ? p0.x-CELL_SIZE : p1.x-CELL_SIZE;
         }
         if (!map.hitTest(this.x+newX, this.y+p0.y) && !map.hitTest(this.x+newX, this.y+p1)) {
@@ -217,7 +217,7 @@ function createPair (game, map, field) {
         newY = formNum==2 ? p0.y+CELL_SIZE : p1.y+CELL_SIZE;
 
         // 落下速度の設定(10や1などの数値は何マス毎秒か
-        var vy = Math.floor(game.input.down ? game.fps/10 : game.fps/1);
+        var vy = Math.floor(game.input.down ? game.fps/15 : game.fps/1);
 
         if (game.frame%vy == 0) {
 
