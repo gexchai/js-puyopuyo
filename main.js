@@ -15,6 +15,9 @@ var CELL_SIZE = 16;
 // ぷよのがぞう
 var PUYOS_IMG = "puyos.png";
 
+// 描画用のフィールド
+var DRAW_FILED = new Array(MAX_ROW-2);
+
 window.onload = function () {
     var game = new Game(320, 320);
 
@@ -55,9 +58,12 @@ window.onload = function () {
             field[i] = temp_array;
         }
 
+        // 描画用のフィールドにコピー
+        copyDraw(field);
+
         // mapにぷよ画像を読みこませる
         map.image = game.assets[PUYOS_IMG];
-        map.loadData(field);
+        map.loadData(DRAW_FILED);
         scene.addChild(map);
 
         // 操作するぷよ２つを作成
@@ -82,8 +88,11 @@ window.onload = function () {
                 // 連鎖処理
                 chain(field);
 
+                // 描画用フィールドにコピー
+                copyDraw(field);
+
                 // マップの再読み込み
-                map.loadData(field);
+                map.loadData(DRAW_FILED);
 
                 // ゲームオーバー判定
                 if (field[2][3] != -1) {
@@ -332,4 +341,16 @@ function chain (field) {
 
     // 自由落下したぷよが合った場合は再帰
     if (freeFall(field) >= 1) chain(field);
+}
+
+
+/**
+ * 描画用フィールドにコピー
+ *
+ * @field {Array}
+ */
+function copyDraw(field) {
+    for (var i=2; i<MAX_ROW; i++) {
+        DRAW_FILED[i-2] = field[i];
+    }
 }
