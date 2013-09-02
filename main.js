@@ -18,6 +18,15 @@ var PUYOS_IMG = "puyos.png";
 // 描画用のフィールド
 var DRAW_FILED = new Array(MAX_ROW-2);
 
+// フィールド定数
+const FIELD_EMPTY = -1;
+const FIELD_BLOCK = 0;
+const FIELD_PUYO_1 = 1;
+const FIELD_PUYO_2 = 2;
+const FIELD_PUYO_3 = 3;
+const FIELD_PUYO_4 = 4;
+
+
 window.onload = function () {
     var game = new Game(320, 320);
 
@@ -51,9 +60,9 @@ window.onload = function () {
             var temp_array = [];
             for (var j=0; j<MAX_COL; j++) {
                 // ブロック(壁)を配置
-                if (j==0 || j==MAX_COL-1 || i==MAX_ROW-1) temp_array[j] = 0;
+                if (j==0 || j==MAX_COL-1 || i==MAX_ROW-1) temp_array[j] = FIELD_BLOCK;
                 // から
-                else temp_array[j] = -1;
+                else temp_array[j] = FIELD_EMPTY;
             }
             field[i] = temp_array;
         }
@@ -183,17 +192,53 @@ function createPair (game, map, field) {
 
         /* 回転 */
         if (inputACount == 1 || inputUpCount == 1) {
+
             // 回転した場合のフォームナンバ
             var newFormNum = (formNum+1) % 4;
+            var newFormNum2 = (formNum-1) < 0 ? 3 : (formNum-1);
 
             // 回転先のx
             var newX = forms[newFormNum][0];
+            var newX2 = forms[newFormNum2][0];
 
             // 回転先のy
             var newY = forms[newFormNum][1];
+            var newY2 = forms[newFormNum2][1];
 
-            // 回転可能判定
-            if (!map.hitTest(this.x+newX, this.y+newY)) {
+            // 障害物があったらずれる
+            if (map.hitTest(this.x + newX, this.y + newY)) {
+                if (newFormNum == 3) {
+                    if (map.hitTest(this.x + newX2, this.y + newY2)) {
+                        formNum = 0;
+                        p0.moveTo(forms[0][0], forms[0][1]);
+                    } else {
+                        formNum = newFormNum;
+                        p0.moveTo(newX, newY);
+                        this.x += CELL_SIZE;
+                    }
+                }
+                else if (newFormNum == 1) {
+                    if (map.hitTest(this.x + newX2, this.y + newY2)) {
+                        formNum = 2;
+                        p0.moveTo(forms[2][0], forms[2][1]);
+                    } else {
+                        formNum = newFormNum;
+                        p0.moveTo(newX, newY);
+                        this.x -= CELL_SIZE;
+                    }
+                }
+                else if (newFormNum == 2) {
+                    formNum = newFormNum;
+                    p0.moveTo(newX, newY);
+                    this.y -= CELL_SIZE;
+                }
+                else if (newFormNum == 0) {
+                    formNum = newFormNum;
+                    p0.moveTo(newX, newY);
+                    this.y -= CELL_SIZE;
+                }
+            }
+            else {
                 formNum = newFormNum;
                 p0.moveTo(newX, newY);
             }
