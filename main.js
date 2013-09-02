@@ -26,6 +26,10 @@ const FIELD_PUYO_2 = 2;
 const FIELD_PUYO_3 = 3;
 const FIELD_PUYO_4 = 4;
 
+// ステータス
+var statusChain = false;
+var statusDelete = false;
+var statusDeleteCount = 0;
 
 window.onload = function () {
     var game = new Game(320, 320);
@@ -85,7 +89,7 @@ window.onload = function () {
         scene.addEventListener("enterframe", function() {
 
             // 操作ぷよの着地判定
-            if (!pair.isFall) {
+            if (pair && !pair.isFall && !statusDelete) {
 
                 // 操作ぷよをシーンから削除
                 scene.removeChild(pair);
@@ -107,9 +111,23 @@ window.onload = function () {
                     game.stop();
                     console.log("Game Over");
                 } else {
-                    /* 操作ぷよを更新、シーンに追加 */
-                    pair = createPair(game, map, field);
-                    scene.addChild(pair);
+                    if (!statusChain && !statusDelete) {
+                        /* 操作ぷよを更新、シーンに追加 */
+                        pair = createPair(game, map, field);
+                        scene.addChild(pair);
+                    }
+                }
+            }
+            else if (!pair || !pair.isFall) {
+                if (statusChain) {
+                    chain(field);
+                    copyDraw(field);
+                    map.loadData(DRAW_FILED);
+                }
+                else if (statusDelete) {
+                    if (statusDeleteCount++ > 30) {
+                        chain(field);
+                    }
                 }
             }
         });
@@ -377,22 +395,42 @@ function freeFall (field) {
  * @field {Array} フィールドの色情報が格納された２次元配列
  */
 function chain (field) {
-    for (var i=0; i<MAX_ROW; i++) {
-        for (var j=0; j<MAX_COL; j++) {
-            // つながっているぷよをカウントする変数を初期化
-            var n = 0;
 
-            // 同じ色のぷよが４つつながっていた場合
-            if (field[i][j]>=1 && countPuyos(i, j, field)>=4) {
+    if (!statusDelete) {
+        for (var i=0; i<MAX_ROW; i++) {
+            for (var j=0; j<MAX_COL; j++) {
+                // つながっているぷよをカウントする変数を初期化
+                var n = 0;
 
-                // ぷよを消去
-                deletePuyos(i, j, field);
+                // 同じ色のぷよが４つつながっていた場合
+                if (field[i][j]>=1 && countPuyos(i, j, field)>=4) {
+
+                    statusDelete = true;
+                    statusDeleteCount = 0;
+                }
             }
         }
     }
+    else {
+        for (var i=0; i<MAX_ROW; i++) {
+            for (var j=0; j<MAX_COL; j++) {
+                // つながっているぷよをカウントする変数を初期化
+                var n = 0;
+                // 同じ色のぷよが４つつながっていた場合
+                if (field[i][j]>=1 && countPuyos(i, j, field)>=4) {
+                    deletePuyos(i, j, field);
+                }
+            }
+        }
+        statusDelete = false;
+    }
 
     // 自由落下したぷよが合った場合は再帰
-    if (freeFall(field) >= 1) chain(field);
+    if (freeFall(field) >= 1) {
+        statusChain = true;
+    } else {
+        statusChain = false;
+    }
 }
 
 
