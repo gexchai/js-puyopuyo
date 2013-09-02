@@ -181,6 +181,9 @@ function createPair (game, map, field) {
     // グループの初期位置を操作ぷよ出現場所へ
     pair.moveTo(CELL_SIZE*3, CELL_SIZE);
 
+    // 着地した後の操作
+    pair.fallCount = 0;
+
     pair.addEventListener("enterframe", function() {
         // フレーム毎の処理
 
@@ -270,12 +273,16 @@ function createPair (game, map, field) {
             if (!map.hitTest(this.x+p0.x, this.y+newY) && !map.hitTest(this.x+p1.x, this.y+newY)) {
                 this.y += CELL_SIZE;
             } else {
-                /* フィールドに操作ぷよを追加 */
-                field[(this.y+p0.y)/CELL_SIZE][(this.x+p0.x)/CELL_SIZE] = p0.frame;
-                field[(this.y+p1.y)/CELL_SIZE][(this.x+p1.x)/CELL_SIZE] = p1.frame;
+                pair.fallCount++;
 
-                // 着地したので落下中フラグをfalseに
-                pair.isFall = false;
+                if (pair.fallCount > 2 || game.input.down) {
+                    /* フィールドに操作ぷよを追加 */
+                    field[(this.y+p0.y)/CELL_SIZE][(this.x+p0.x)/CELL_SIZE] = p0.frame;
+                    field[(this.y+p1.y)/CELL_SIZE][(this.x+p1.x)/CELL_SIZE] = p1.frame;
+
+                    // 着地したので落下中フラグをfalseに
+                    pair.isFall = false;
+                }
             }
         }
     });
